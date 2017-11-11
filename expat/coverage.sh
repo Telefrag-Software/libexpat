@@ -21,7 +21,12 @@ _get_build_dir() {
         mingw_part=__windows
     fi
 
-    echo "build__${version}__unicode_${unicode_enabled}__xml_context_${xml_context}${libbsd_part}${mingw_part}"
+    local char_part=
+    if ${with_unsigned_char}; then
+        char_part=__unsigned_char
+    fi
+
+    echo "build__${version}__unicode_${unicode_enabled}__xml_context_${xml_context}${libbsd_part}${mingw_part}${char_part}"
 }
 
 
@@ -95,6 +100,8 @@ _run() {
     local BASE_FLAGS='-pipe -Wall -Wextra -pedantic -Wno-overlength-strings'
     BASE_FLAGS+=' --coverage --no-inline'
 
+    ${with_unsigned_char} && BASE_FLAGS="${BASE_FLAGS} -funsigned-char"
+
     local CFLAGS="-std=c99 ${BASE_FLAGS}"
     local CXXFLAGS="-std=c++98 ${BASE_FLAGS}"
 
@@ -108,17 +115,20 @@ _run() {
 
         (
             set -x
-            make buildlib &> build.log
+            make -C lib &> build.log
 
             lcov -c -d "${capture_dir}" -i -o "${coverage_info}-zero" &> run.log
         )
 
         if ${with_mingw}; then
-            _copy_missing_mingw_libaries .libs
+            for d in {tests,xmlwf}/.libs ; do
+                mkdir -p "${d}"
+                _copy_missing_mingw_libaries "${d}"
+            done
         fi
 
         set -x
-        make check run-xmltest
+        make all check run-xmltest
 
         lcov -c -d "${capture_dir}" -o "${coverage_info}-test" &>> run.log
         lcov \
@@ -193,9 +203,14 @@ _main() {
     }
 
     # All combinations:
+    with_unsigned_char=false
     with_libbsd=false
     for with_mingw in true false ; do
-        for unicode_enabled in false ; do
+        for unicode_enabled in true false ; do
+            if ${unicode_enabled} && ! ${with_mingw} ; then
+                continue
+            fi
+
             for xml_context in 0 1024 ; do
                 _build_case
             done
@@ -204,6 +219,7 @@ _main() {
 
     # Single cases:
     with_libbsd=true _build_case
+    with_unsigned_char=true _build_case
 
     echo
     echo 'Merging coverage files...'

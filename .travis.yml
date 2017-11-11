@@ -6,10 +6,10 @@ dist: trusty
 
 env:
   global:
-    - CPPFLAGS='-DXML_POOR_ENTROPY'  # bad idea, do not copy!
     - CFLAGS='-g -pipe'
   matrix:
     - MODE=address
+    - MODE=distcheck
     - MODE=lib-coverage
 
 addons:
@@ -20,8 +20,7 @@ addons:
       - clang-4.0
       - docbook2x
       - dos2unix
+      - rpm
 
 script:
-  - cd expat
-  - ./buildconf.sh
-  - ./qa.sh ${MODE}
+  - ./.travis.sh

@@ -15,7 +15,7 @@ set -o nounset
 : ${LD:=ld}
 : ${MAKE:=make}
 
-: ${BASE_COMPILE_FLAGS:="-pipe -Wall -Wextra -pedantic -Wno-overlength-strings"}
+: ${BASE_COMPILE_FLAGS:="-pipe -Wall -Wextra -pedantic -Wno-overlength-strings -Wno-long-long"}
 
 ANNOUNCE() {
     local open='\e[1m'
@@ -55,7 +55,7 @@ main() {
         ;;
     memory)
         # http://clang.llvm.org/docs/MemorySanitizer.html
-        BASE_COMPILE_FLAGS+=" -fsanitize=memory -fno-omit-frame-pointer -g -O2 -fsanitize-memory-track-origins -fsanitize-blacklist=memory-sanitizer-blacklist.txt"
+        BASE_COMPILE_FLAGS+=" -fsanitize=memory -fno-omit-frame-pointer -g -O2 -fsanitize-memory-track-origins -fsanitize-blacklist=$PWD/memory-sanitizer-blacklist.txt"
         ;;
     ncc)
         # http://students.ceid.upatras.gr/~sxanth/ncc/
@@ -76,7 +76,7 @@ main() {
         ;;
     esac
 
-    local CFLAGS="-std=c99 ${BASE_COMPILE_FLAGS} ${CFLAGS:-}"
+    local CFLAGS="-std=c89 ${BASE_COMPILE_FLAGS} ${CFLAGS:-}"
     local CXXFLAGS="-std=c++98 ${BASE_COMPILE_FLAGS} ${CXXFLAGS:-}"
 
     (

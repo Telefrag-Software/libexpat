@@ -3,6 +3,9 @@
 /* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
 #undef BYTEORDER
 
+/* Define to 1 if you have the `arc4random' function. */
+#undef HAVE_ARC4RANDOM
+
 /* Define to 1 if you have the `arc4random_buf' function. */
 #undef HAVE_ARC4RANDOM_BUF
 
@@ -63,8 +66,12 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
 #undef LT_OBJDIR
+
+/* Name of package */
+#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -87,12 +94,18 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* Version number of package */
+#undef VERSION
+
 /* whether byteorder is bigendian */
 #undef WORDS_BIGENDIAN
 
 /* Define to specify how much context to retain around the current parse
    point. */
 #undef XML_CONTEXT_BYTES
+
+/* Define to include code reading entropy from `/dev/urandom'. */
+#undef XML_DEV_URANDOM
 
 /* Define to make parameter entity parsing functionality available. */
 #undef XML_DTD
