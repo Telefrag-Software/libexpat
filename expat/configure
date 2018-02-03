@@ -16632,7 +16632,7 @@ fi
 if test "${with_docbook+set}" = set; then :
   withval=$with_docbook;
 else
-  with_docbook=check
+  with_docbook=no
 fi
 
 
