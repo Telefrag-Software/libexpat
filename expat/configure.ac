@@ -233,7 +233,7 @@ AC_ARG_WITH([docbook], [AS_HELP_STRING([--with-docbook],
 AS_HELP_STRING([--without-docbook],
     [skip XML to man page compilation @<:@default=check@:>@])],
   [],
-  [with_docbook=no])
+  [with_docbook=check])
 
 AC_ARG_VAR([DOCBOOK_TO_MAN], [docbook2x-man command])
 AS_IF([test "x$with_docbook" != xno],
