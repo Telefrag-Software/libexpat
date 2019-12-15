@@ -1,4 +1,4 @@
-/* f2d0ab6d1d4422a08cf1cf3bbdfba96b49dea42fb5ff4615e03a2a25c306e769 (2.2.8+)
+/* f519f27c7c3b79fee55aeb8b1e53b7384b079d9118bf3a62eb3a60986a6742f2 (2.2.9+)
                             __  __            _
                          ___\ \/ /_ __   __ _| |_
                         / _ \\  /| '_ \ / _` | __|
@@ -36,7 +36,9 @@
 
 #ifdef _WIN32
 /* force stdlib to define rand_s() */
-#  define _CRT_RAND_S
+#  if ! defined(_CRT_RAND_S)
+#    define _CRT_RAND_S
+#  endif
 #endif
 
 #include <stddef.h>
@@ -99,14 +101,14 @@
     enabled.  For end user security, that is probably not what you want. \
     \
     Your options include: \
-      * Linux + glibc >=2.25 (getrandom): HAVE_GETRANDOM, \
-      * Linux + glibc <2.25 (syscall SYS_getrandom): HAVE_SYSCALL_GETRANDOM, \
+      * Linux >=3.17 + glibc >=2.25 (getrandom): HAVE_GETRANDOM, \
+      * Linux >=3.17 + glibc (including <2.25) (syscall SYS_getrandom): HAVE_SYSCALL_GETRANDOM, \
       * BSD / macOS >=10.7 (arc4random_buf): HAVE_ARC4RANDOM_BUF, \
-      * BSD / macOS <10.7 (arc4random): HAVE_ARC4RANDOM, \
+      * BSD / macOS (including <10.7) (arc4random): HAVE_ARC4RANDOM, \
       * libbsd (arc4random_buf): HAVE_ARC4RANDOM_BUF + HAVE_LIBBSD, \
       * libbsd (arc4random): HAVE_ARC4RANDOM + HAVE_LIBBSD, \
-      * Linux / BSD / macOS (/dev/urandom): XML_DEV_URANDOM \
-      * Windows (rand_s): _WIN32. \
+      * Linux (including <3.17) / BSD / macOS (including <10.7) (/dev/urandom): XML_DEV_URANDOM, \
+      * Windows >=Vista (rand_s): _WIN32. \
     \
     If insist on not using any of these, bypass this error by defining \
     XML_POOR_ENTROPY; you have been warned. \
@@ -737,11 +739,13 @@ writeRandomBytes_arc4random(void *target, size_t count) {
 #ifdef _WIN32
 
 /* Provide declaration of rand_s() for MinGW-32 (not 64, which has it),
-   as it doesn't declare it in its header up to at least 5.2.2 version
-   of its runtime. */
-#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
-__declspec(dllimport) int rand_s(unsigned int*);
-#endif
+   as it didn't declare it in its header prior to version 5.3.0 of its
+   runtime package (mingwrt, containing stdlib.h).  The upstream fix
+   was introduced at https://osdn.net/projects/mingw/ticket/39658 . */
+#  if defined(__MINGW32__) && defined(__MINGW32_VERSION)                       \
+      && __MINGW32_VERSION < 5003000L && ! defined(__MINGW64_VERSION_MAJOR)
+__declspec(dllimport) int rand_s(unsigned int *);
+#  endif
 
 /* Obtain entropy on Windows using the rand_s() function which
  * generates cryptographically secure random numbers.  Internally it
@@ -1408,6 +1412,7 @@ XML_UseForeignDTD(XML_Parser parser, XML_Bool useDTD) {
   parser->m_useForeignDTD = useDTD;
   return XML_ERROR_NONE;
 #else
+  UNUSED_P(useDTD);
   return XML_ERROR_FEATURE_REQUIRES_XML_DTD;
 #endif
 }
@@ -1789,7 +1794,7 @@ XML_Parse(XML_Parser parser, const char *s, int len, int isFinal) {
     int nLeftOver;
     enum XML_Status result;
     /* Detect overflow (a+b > MAX <==> b > MAX-a) */
-    if (len > ((XML_Size)-1) / 2 - parser->m_parseEndByteIndex) {
+    if ((XML_Size)len > ((XML_Size)-1) / 2 - parser->m_parseEndByteIndex) {
       parser->m_errorCode = XML_ERROR_NO_MEMORY;
       parser->m_eventPtr = parser->m_eventEndPtr = NULL;
       parser->m_processor = errorProcessor;
