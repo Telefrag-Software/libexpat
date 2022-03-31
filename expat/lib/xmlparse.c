@@ -94,6 +94,8 @@ typedef unsigned __int64 uintptr_t;
 #  else
 typedef unsigned __int32 uintptr_t;
 #  endif
+/* and also use _isnan() rather than the standard isnan() */
+#  define isnan(x) _isnan(x)
 #else
 #  include <stdint.h> /* uintptr_t */
 #endif
