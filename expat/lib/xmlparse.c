@@ -3496,14 +3496,16 @@ storeAtts(XML_Parser parser, const ENCODING *enc, const char *attStr,
   if (nPrefixes) {
     int j; /* hash table index */
     unsigned long version = parser->m_nsAttsVersion;
+    unsigned int nsAttsSize;
+    unsigned char oldNsAttsPower;
 
     /* Detect and prevent invalid shift */
     if (parser->m_nsAttsPower >= sizeof(unsigned int) * 8 /* bits per byte */) {
       return XML_ERROR_NO_MEMORY;
     }
 
-    unsigned int nsAttsSize = 1u << parser->m_nsAttsPower;
-    unsigned char oldNsAttsPower = parser->m_nsAttsPower;
+    nsAttsSize = 1u << parser->m_nsAttsPower;
+    oldNsAttsPower = parser->m_nsAttsPower;
     /* size of hash table must be at least 2 * (# of prefixed attributes) */
     if ((nPrefixes << 1)
         >> parser->m_nsAttsPower) { /* true for m_nsAttsPower = 0 */
