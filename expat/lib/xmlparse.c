@@ -3496,16 +3496,15 @@ storeAtts(XML_Parser parser, const ENCODING *enc, const char *attStr,
   if (nPrefixes) {
     int j; /* hash table index */
     unsigned long version = parser->m_nsAttsVersion;
-    unsigned int nsAttsSize;
-    unsigned char oldNsAttsPower;
 
     /* Detect and prevent invalid shift */
     if (parser->m_nsAttsPower >= sizeof(unsigned int) * 8 /* bits per byte */) {
       return XML_ERROR_NO_MEMORY;
     }
 
-    nsAttsSize = 1u << parser->m_nsAttsPower;
-    oldNsAttsPower = parser->m_nsAttsPower;
+    {// FIXME-C89
+    unsigned int nsAttsSize = 1u << parser->m_nsAttsPower;
+    unsigned char oldNsAttsPower = parser->m_nsAttsPower;
     /* size of hash table must be at least 2 * (# of prefixed attributes) */
     if ((nPrefixes << 1)
         >> parser->m_nsAttsPower) { /* true for m_nsAttsPower = 0 */
@@ -3660,6 +3659,7 @@ storeAtts(XML_Parser parser, const ENCODING *enc, const char *attStr,
       } else                     /* not prefixed */
         ((XML_Char *)s)[-1] = 0; /* clear flag */
     }
+    }// FIXME-C89
   }
   /* clear flags for the remaining attributes */
   for (; i < attIndex; i += 2)
@@ -3965,12 +3965,14 @@ addBinding(XML_Parser parser, PREFIX *prefix, const ATTRIBUTE_ID *attId,
       }
 #endif
 
+      {// FIXME-C89
       XML_Char *temp = (XML_Char *)REALLOC(
           parser, b->uri, sizeof(XML_Char) * (len + EXPAND_SPARE));
       if (temp == NULL)
         return XML_ERROR_NO_MEMORY;
       b->uri = temp;
       b->uriAlloc = len + EXPAND_SPARE;
+      }// FIXME-C89
     }
     parser->m_freeBindingList = b->nextTagBinding;
   } else {
@@ -5323,6 +5325,7 @@ doProlog(XML_Parser parser, const ENCODING *enc, const char *s, const char *end,
               return XML_ERROR_NO_MEMORY;
             }
 
+            {// FIXME-C89
             char *const new_connector = (char *)REALLOC(
                 parser, parser->m_groupConnector, parser->m_groupSize *= 2);
             if (new_connector == NULL) {
@@ -5330,6 +5333,7 @@ doProlog(XML_Parser parser, const ENCODING *enc, const char *s, const char *end,
               return XML_ERROR_NO_MEMORY;
             }
             parser->m_groupConnector = new_connector;
+            }// FIXME-C89
           }
 
           if (dtd->scaffIndex) {
@@ -5343,11 +5347,13 @@ doProlog(XML_Parser parser, const ENCODING *enc, const char *s, const char *end,
             }
 #endif
 
+            {// FIXME-C89
             int *const new_scaff_index = (int *)REALLOC(
                 parser, dtd->scaffIndex, parser->m_groupSize * sizeof(int));
             if (new_scaff_index == NULL)
               return XML_ERROR_NO_MEMORY;
             dtd->scaffIndex = new_scaff_index;
+            }// FIXME-C89
           }
         } else {
           parser->m_groupConnector
@@ -6425,6 +6431,7 @@ defineAttribute(ELEMENT_TYPE *type, ATTRIBUTE_ID *attId, XML_Bool isCdata,
         return 0;
       }
 
+      {// FIXME-C89
       int count = type->allocDefaultAtts * 2;
 
       /* Detect and prevent integer overflow.
@@ -6443,6 +6450,7 @@ defineAttribute(ELEMENT_TYPE *type, ATTRIBUTE_ID *attId, XML_Bool isCdata,
         return 0;
       type->allocDefaultAtts = count;
       type->defaultAtts = temp;
+      }// FIXME-C89
     }
   }
   att = type->defaultAtts + type->nDefaultAtts;
@@ -7093,6 +7101,7 @@ lookup(XML_Parser parser, HASH_TABLE *table, KEY name, size_t createSize) {
         return NULL;
       }
 
+      {// FIXME-C89
       size_t newSize = (size_t)1 << newPower;
       unsigned long newMask = (unsigned long)newSize - 1;
 
@@ -7101,6 +7110,7 @@ lookup(XML_Parser parser, HASH_TABLE *table, KEY name, size_t createSize) {
         return NULL;
       }
 
+      {// FIXME-C89
       size_t tsize = newSize * sizeof(NAMED *);
       NAMED **newV = table->mem->malloc_fcn(tsize);
       if (! newV)
@@ -7129,6 +7139,7 @@ lookup(XML_Parser parser, HASH_TABLE *table, KEY name, size_t createSize) {
           step = PROBE_STEP(h, newMask, newPower);
         i < step ? (i += newSize - step) : (i -= step);
       }
+      }}// FIXME-C89
     }
   }
   table->v[i] = table->mem->malloc_fcn(createSize);
@@ -7522,6 +7533,7 @@ build_model(XML_Parser parser) {
     return NULL;
   }
 
+  {// FIXME-C89
   const size_t allocsize = (dtd->scaffCount * sizeof(XML_Content)
                             + (dtd->contentStringLen * sizeof(XML_Char)));
 
@@ -7578,6 +7590,7 @@ build_model(XML_Parser parser) {
    *
    * - The algorithm repeats until all target array indices have been processed.
    */
+  {// FIXME-C89
   XML_Content *dest = ret; /* tree node writing location, moves upwards */
   XML_Content *const destLimit = &ret[dtd->scaffCount];
   XML_Content *jobDest = ret; /* next free writing location in target array */
@@ -7618,6 +7631,7 @@ build_model(XML_Parser parser) {
         (jobDest++)->numchildren = (unsigned int)cn;
     }
   }
+  }}// FIXME-C89
 
   return ret;
 }
@@ -7691,6 +7705,7 @@ accountingReportStats(XML_Parser originParser, const char *epilog) {
     return;
   }
 
+  {// FIXME-C89
   const float amplificationFactor
       = accountingGetCurrentAmplification(rootParser);
   fprintf(stderr,
@@ -7699,6 +7714,7 @@ accountingReportStats(XML_Parser originParser, const char *epilog) {
           (void *)rootParser, rootParser->m_accounting.countBytesDirect,
           rootParser->m_accounting.countBytesIndirect,
           (double)amplificationFactor, epilog);
+  }// FIXME-C89
 }
 
 static void
@@ -7718,6 +7734,7 @@ accountingReportDiff(XML_Parser rootParser,
           bytesMore, (account == XML_ACCOUNT_DIRECT) ? "DIR" : "EXP",
           levelsAwayFromRootParser, source_line, 10, "");
 
+  {// FIXME-C89
   const char ellipis[] = "[..]";
   const size_t ellipsisLength = sizeof(ellipis) /* because compile-time */ - 1;
   const unsigned int contextLength = 10;
@@ -7741,6 +7758,7 @@ accountingReportDiff(XML_Parser rootParser,
     }
   }
   fprintf(stderr, "\"\n");
+  }// FIXME-C89
 }
 
 static XML_Bool
@@ -7761,11 +7779,13 @@ accountingDiffTolerated(XML_Parser originParser, int tok, const char *before,
   if (account == XML_ACCOUNT_NONE)
     return XML_TRUE; /* because these bytes have been accounted for, already */
 
+  {// FIXME-C89
   unsigned int levelsAwayFromRootParser;
   const XML_Parser rootParser
       = getRootParserOf(originParser, &levelsAwayFromRootParser);
   assert(! rootParser->m_parentParser);
 
+  {// FIXME-C89
   const int isDirect
       = (account == XML_ACCOUNT_DIRECT) && (originParser == rootParser);
   const ptrdiff_t bytesMore = after - before;
@@ -7779,6 +7799,7 @@ accountingDiffTolerated(XML_Parser originParser, int tok, const char *before,
     return XML_FALSE;
   *additionTarget += bytesMore;
 
+  {// FIXME-C89
   const XmlBigCount countBytesOutput
       = rootParser->m_accounting.countBytesDirect
         + rootParser->m_accounting.countBytesIndirect;
@@ -7796,6 +7817,7 @@ accountingDiffTolerated(XML_Parser originParser, int tok, const char *before,
   }
 
   return tolerated;
+  }}}// FIXME-C89
 }
 
 unsigned long long
@@ -7819,6 +7841,7 @@ entityTrackingReportStats(XML_Parser rootParser, ENTITY *entity,
   if (rootParser->m_entity_stats.debugLevel < 1)
     return;
 
+  {// FIXME-C89
 #  if defined(XML_UNICODE)
   const char *const entityName = "[..]";
 #  else
@@ -7834,6 +7857,7 @@ entityTrackingReportStats(XML_Parser rootParser, ENTITY *entity,
       (rootParser->m_entity_stats.currentDepth - 1) * 2, "",
       entity->is_param ? "%" : "&", entityName, action, entity->textLen,
       sourceLine);
+  }// FIXME-C89
 }
 
 static void
@@ -8405,10 +8429,13 @@ getDebugLevel(const char *variableName, unsigned long defaultDebugLevel) {
   if (valueOrNull == NULL) {
     return defaultDebugLevel;
   }
+  {// FIXME-C89
   const char *const value = valueOrNull;
 
   errno = 0;
+  {// FIXME-C89
   char *afterValue = (char *)value;
+  {// FIXME-C89
   unsigned long debugLevel = strtoul(value, &afterValue, 10);
   if ((errno != 0) || (afterValue[0] != '\0')) {
     errno = 0;
@@ -8416,4 +8443,5 @@ getDebugLevel(const char *variableName, unsigned long defaultDebugLevel) {
   }
 
   return debugLevel;
+  }}}// FIXME-C89
 }
