@@ -87,15 +87,19 @@
 #include <stdlib.h> /* getenv, rand_s */
 #include <math.h>   /* isnan */
 
-#if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
+#if defined(_WIN32) && defined(_MSC_VER)
+#  if _MSC_VER < 1600
 /* vs2008/9.0 and earlier lack stdint.h; _MSC_VER 1600 is vs2010/10.0 */
 #  if defined(_WIN64)
 typedef unsigned __int64 uintptr_t;
 #  else
 typedef unsigned __int32 uintptr_t;
 #  endif
-/* and also use _isnan() rather than the standard isnan() */
+#  endif
+#  if _MSC_VER < 1800
+/* and until vs2013 we have to use _isnan() rather than the standard isnan() */
 #  define isnan(x) _isnan(x)
+#  endif
 #else
 #  include <stdint.h> /* uintptr_t */
 #endif
